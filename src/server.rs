@@ -1,48 +1,46 @@
 use super::todo::task_service_server::TaskService;
-use super::todo::{
-    Task, TaskAddReq, TaskChangeResponse, TaskId, TaskUpdateRequest, TaskUpdateResponse,
-};
+use super::todo::{Name, Task, TaskChangeResponse, TaskUpdateRequest, TaskUpdateResponse};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex};
 use tonic::{Request, Response, Status};
 
 pub struct TodoStruct {
-    map: Arc<Mutex<HashMap<i32, Task>>>,
+    map: Arc<Mutex<HashMap<String, Task>>>,
 }
 impl Default for TodoStruct {
     fn default() -> Self {
         return Self {
-            map: Arc::new(Mutex::new(HashMap::<i32, Task>::new())),
+            map: Arc::new(Mutex::new(HashMap::<String, Task>::new())),
         };
     }
 }
 #[tonic::async_trait]
 impl TaskService for TodoStruct {
-    async fn add(
-        &self,
-        request: Request<TaskAddReq>,
-    ) -> Result<Response<TaskChangeResponse>, Status> {
+    async fn add(&self, request: Request<Task>) -> Result<Response<TaskChangeResponse>, Status> {
         // we check for the request
         let task = request.into_inner();
-        if task.name == "" || task.desc == "" {
-            return Err(Status::invalid_argument("EMPTY_ARGUMENT_PROVIDED"));
-        }
-        let task_builder = Task {
-            id: Some(TaskId { id: 12 }),
-            name: task.name,
-            desc: task.desc,
+        let name = match task.name.as_ref() {
+            Some(name) => name.name.clone(),
+            None => return Err(Status::invalid_argument("name is required")),
         };
-        let mut data_map = self.map.lock().await;
-        data_map.insert(12, task_builder);
-        return Ok(Response::new(TaskChangeResponse {
-            status: "Success".to_string(),
+        let mut task_map = self.map.lock().await;
+        task_map.insert(name, task);
+        return Ok(Response::new({
+            TaskChangeResponse {
+                status: "success".to_string(),
+            }
         }));
     }
-    async fn delete(
-        &self,
-        request: Request<TaskId>,
-    ) -> Result<Response<TaskChangeResponse>, Status> {
+    async fn delete(&self, request: Request<Name>) -> Result<Response<TaskChangeResponse>, Status> {
+        let mut task_map = self.map.lock().await;
+        let name = request.into_inner();
+        let key = name.name.clone();
+        if let Some(k) = task_map.get(&key) {
+            task_map.remove(&key);
+        } else {
+            return Err(Status::not_found("Name_NOT_FOUND"));
+        }
         return Ok(Response::new(TaskChangeResponse {
             status: "deleted".to_string(),
         }));
@@ -54,18 +52,21 @@ impl TaskService for TodoStruct {
         return Ok(Response::new(TaskUpdateResponse {
             status: "updated".to_string(),
             task: Some(Task {
-                id: Some(TaskId { id: 1 }),
-                name: "some task".to_string(),
-                desc: "some desc".to_string(),
+                name: Some(Name {
+                    name: "test".to_string(),
+                }),
+                desc: "some_desc".to_string(),
             }),
         }));
     }
-    async fn get(&self, request: Request<TaskId>) -> Result<Response<Task>, Status> {
+    async fn get(&self, request: Request<Name>) -> Result<Response<Task>, Status> {
+        println!("{:?}", request);
         let req = request.into_inner();
+        let name = req.name;
         let map = self.map.lock().await;
-        if let Some(task) = map.get(&req.id) {
+        if let Some(task) = map.get(&name) {
             return Ok(Response::new(task.clone()));
         }
-        return Err(Status::not_found("ID_NOT_FOUND"));
+        return Err(Status::not_found("NAME_NOT_FOUND"));
     }
 }

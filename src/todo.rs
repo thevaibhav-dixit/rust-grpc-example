@@ -1,25 +1,9 @@
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct TaskId {
-    #[prost(int32, tag = "1")]
-    pub id: i32,
-}
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Task {
-    #[prost(message, optional, tag = "1")]
-    pub id: ::core::option::Option<TaskId>,
-    #[prost(string, tag = "2")]
-    pub name: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "2")]
+    pub name: ::core::option::Option<Name>,
     #[prost(string, tag = "3")]
-    pub desc: ::prost::alloc::string::String,
-}
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct TaskAddReq {
-    #[prost(string, tag = "1")]
-    pub name: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
     pub desc: ::prost::alloc::string::String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -40,11 +24,15 @@ pub struct TaskUpdateResponse {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TaskUpdateRequest {
     #[prost(message, optional, tag = "1")]
-    pub id: ::core::option::Option<TaskId>,
-    #[prost(string, tag = "2")]
-    pub name: ::prost::alloc::string::String,
+    pub name: ::core::option::Option<Name>,
     #[prost(string, tag = "3")]
     pub desc: ::prost::alloc::string::String,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Name {
+    #[prost(string, tag = "1")]
+    pub name: ::prost::alloc::string::String,
 }
 /// Generated client implementations.
 pub mod task_service_client {
@@ -117,7 +105,7 @@ pub mod task_service_client {
         }
         pub async fn add(
             &mut self,
-            request: impl tonic::IntoRequest<super::TaskAddReq>,
+            request: impl tonic::IntoRequest<super::Task>,
         ) -> Result<tonic::Response<super::TaskChangeResponse>, tonic::Status> {
             self.inner
                 .ready()
@@ -134,7 +122,7 @@ pub mod task_service_client {
         }
         pub async fn delete(
             &mut self,
-            request: impl tonic::IntoRequest<super::TaskId>,
+            request: impl tonic::IntoRequest<super::Name>,
         ) -> Result<tonic::Response<super::TaskChangeResponse>, tonic::Status> {
             self.inner
                 .ready()
@@ -168,7 +156,7 @@ pub mod task_service_client {
         }
         pub async fn get(
             &mut self,
-            request: impl tonic::IntoRequest<super::TaskId>,
+            request: impl tonic::IntoRequest<super::Name>,
         ) -> Result<tonic::Response<super::Task>, tonic::Status> {
             self.inner
                 .ready()
@@ -194,11 +182,11 @@ pub mod task_service_server {
     pub trait TaskService: Send + Sync + 'static {
         async fn add(
             &self,
-            request: tonic::Request<super::TaskAddReq>,
+            request: tonic::Request<super::Task>,
         ) -> Result<tonic::Response<super::TaskChangeResponse>, tonic::Status>;
         async fn delete(
             &self,
-            request: tonic::Request<super::TaskId>,
+            request: tonic::Request<super::Name>,
         ) -> Result<tonic::Response<super::TaskChangeResponse>, tonic::Status>;
         async fn update(
             &self,
@@ -206,7 +194,7 @@ pub mod task_service_server {
         ) -> Result<tonic::Response<super::TaskUpdateResponse>, tonic::Status>;
         async fn get(
             &self,
-            request: tonic::Request<super::TaskId>,
+            request: tonic::Request<super::Name>,
         ) -> Result<tonic::Response<super::Task>, tonic::Status>;
     }
     #[derive(Debug)]
@@ -271,7 +259,7 @@ pub mod task_service_server {
                 "/todo.TaskService/add" => {
                     #[allow(non_camel_case_types)]
                     struct addSvc<T: TaskService>(pub Arc<T>);
-                    impl<T: TaskService> tonic::server::UnaryService<super::TaskAddReq>
+                    impl<T: TaskService> tonic::server::UnaryService<super::Task>
                     for addSvc<T> {
                         type Response = super::TaskChangeResponse;
                         type Future = BoxFuture<
@@ -280,7 +268,7 @@ pub mod task_service_server {
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::TaskAddReq>,
+                            request: tonic::Request<super::Task>,
                         ) -> Self::Future {
                             let inner = self.0.clone();
                             let fut = async move { (*inner).add(request).await };
@@ -307,7 +295,7 @@ pub mod task_service_server {
                 "/todo.TaskService/delete" => {
                     #[allow(non_camel_case_types)]
                     struct deleteSvc<T: TaskService>(pub Arc<T>);
-                    impl<T: TaskService> tonic::server::UnaryService<super::TaskId>
+                    impl<T: TaskService> tonic::server::UnaryService<super::Name>
                     for deleteSvc<T> {
                         type Response = super::TaskChangeResponse;
                         type Future = BoxFuture<
@@ -316,7 +304,7 @@ pub mod task_service_server {
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::TaskId>,
+                            request: tonic::Request<super::Name>,
                         ) -> Self::Future {
                             let inner = self.0.clone();
                             let fut = async move { (*inner).delete(request).await };
@@ -381,7 +369,7 @@ pub mod task_service_server {
                 "/todo.TaskService/get" => {
                     #[allow(non_camel_case_types)]
                     struct getSvc<T: TaskService>(pub Arc<T>);
-                    impl<T: TaskService> tonic::server::UnaryService<super::TaskId>
+                    impl<T: TaskService> tonic::server::UnaryService<super::Name>
                     for getSvc<T> {
                         type Response = super::Task;
                         type Future = BoxFuture<
@@ -390,7 +378,7 @@ pub mod task_service_server {
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::TaskId>,
+                            request: tonic::Request<super::Name>,
                         ) -> Self::Future {
                             let inner = self.0.clone();
                             let fut = async move { (*inner).get(request).await };

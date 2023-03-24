@@ -3,24 +3,17 @@ syntax = "proto3";
 package todo; 
 
 service TaskService{ 
-    rpc add(TaskAddReq) returns (TaskChangeResponse);
-    rpc delete(TaskId) returns (TaskChangeResponse);
+    rpc add(Task) returns (TaskChangeResponse);
+    rpc delete(Name) returns (TaskChangeResponse);
     rpc update(TaskUpdateRequest) returns (TaskUpdateResponse);
-    rpc get(TaskId) returns (Task);
+    rpc get(Name) returns (Task);
 }
 
-message TaskId{
-    int32 id =1 ; 
-}
 message Task { 
-    TaskId id = 1; 
-    string name = 2; 
+    Name name = 2; 
     string desc = 3;
 }
-message TaskAddReq{
-    string name = 1 ; 
-    string desc = 2 ; 
-}
+
 message TaskChangeResponse{
     string status = 1; 
 }
@@ -29,9 +22,12 @@ message TaskUpdateResponse {
     string status = 2; 
 }
 message TaskUpdateRequest { 
-    TaskId id = 1; 
-    string name = 2; 
+    Name name = 1; 
     string desc = 3; 
 }
+message Name { 
+    string name = 1 ; 
+}
+
 
 
